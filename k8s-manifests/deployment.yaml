@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: time-service
-        image: adityadubey/simple-time-service:latest
+        image: adityawdubey/simple-time-service:latest
         ports:
         - containerPort: 80
         resources:
