@@ -91,6 +91,12 @@ kubectl get pods
 kubectl get services
 ```
 
+#### Step 3: Port Forward
+```bash
+kubectl port-forward service/time-service 8080:80
+```
+
+
 ## Configuration
 
 ### Resource Limits
