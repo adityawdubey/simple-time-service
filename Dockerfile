@@ -18,5 +18,5 @@ COPY . /app/
 USER appuser
 
 # Expose port and start app
-EXPOSE 80
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+EXPOSE 8080
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

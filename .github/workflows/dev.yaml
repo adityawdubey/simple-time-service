@@ -42,7 +42,7 @@ jobs:
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
           echo "Using tag: $TAG"
-          docker build -t ${{ vars.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ env.TAG }} .
+          docker build --platform=linux/amd64 -t ${{ vars.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ env.TAG }} .
           docker push ${{ vars.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ env.TAG }}
 
       - name: Install kubectl
