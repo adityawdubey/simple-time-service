@@ -68,14 +68,14 @@ Expected response:
 docker login
 ```
 
-#### Step 2: Tag your image
+#### Step 2: Buid your image
 ```bash
-docker tag time-service:latest yourusername/time-service:latest
+docker build --platform=linux/amd64 -t yourusername/simple-time-service:latest .
 ```
 
 #### Step 3: Push to Docker Hub
 ```bash
-docker push yourusername/time-service:latest
+docker push yourusername/simple-time-service:latest
 ```
 
 ### Kubernetes Deployment
