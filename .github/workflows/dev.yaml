@@ -1,0 +1,85 @@
+name: Simple Time Service EKS deployment
+
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ vars.REGISTRY }}
+
+      - name: Generate Tag (Linux Timestamp)
+        id: tag
+        run: echo "tag=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to Docker Hub
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          echo "Using tag: $TAG"
+          docker build -t ${{ vars.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ env.TAG }} .
+          docker push ${{ vars.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ env.TAG }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ vars.AWS_REGION }} \
+            --name ${{ vars.EKS_CLUSTER_NAME }}
+          kubectl config current-context
+
+      - name: Update deployment with new image
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          echo "Update the image in the deployment YAML"
+          sed -i "s|image: .*|image: ${{ vars.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ env.TAG }}|g" k8s-manifests/deployment.yaml
+          
+          echo "Deployment YAML after replacement:"
+          cat k8s-manifests/deployment.yaml
+
+          # Create namespace if it doesn't exist
+          kubectl create namespace ${{ vars.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Apply the deployment
+          kubectl apply -f k8s-manifests/deployment.yaml -n ${{ vars.NAMESPACE }}
+
+      - name: Check deployment status
+        run: |
+          kubectl rollout status deployment/time-service -n ${{ vars.NAMESPACE }} --timeout=300s
+
+      - name: Verify deployment
+        run: |
+          echo "Current deployment status:"
+          kubectl get deployment time-service -n ${{ vars.NAMESPACE }} -o wide
+          echo "Current pods status:"
+          kubectl get pods -n ${{ vars.NAMESPACE }} -l app=time-service 
