@@ -1,4 +1,4 @@
-name: Simple Time Service EKS deployment
+name: Simple Time Service dev deployment
 
 on:
   push:
