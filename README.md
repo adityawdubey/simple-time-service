@@ -1,5 +1,19 @@
 # SimpleTimeService
 
+## Table of Contents
+- [Features](#features)
+- [Requirements](#requirements)
+- [Usage](#usage)
+  - [Local Development](#local-development)
+  - [Docker Hub Deployment](#docker-hub-deployment)
+  - [Kubernetes Deployment](#kubernetes-deployment)
+- [Configuration](#configuration)
+  - [Resource Limits](#resource-limits)
+  - [Health Checks](#health-checks)
+- [Security](#security)
+- [Notes](#notes)
+- [License](#license)
+
 A minimal microservice built using FastAPI. It returns the current UTC timestamp and the client's IP address.
 
 ## Features
@@ -11,7 +25,7 @@ A minimal microservice built using FastAPI. It returns the current UTC timestamp
 
 ## Requirements
 - [Docker](https://docs.docker.com/get-docker/)
-- [Kubernetes](https://kubernetes.io/docs/setup/) (optional, for deployment)
+- [Kubernetes](https://kubernetes.io/docs/setup/) (for deployment)
 
 ## Usage
 
